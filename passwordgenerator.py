@@ -8,8 +8,8 @@ pw = np.array([
     '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '=', '+',
     '{', '}', '[', ']', '|', '\\', ':', ';', '"', "'", '<', '>', ',', '.', '?', '/'
 ])
-
 password=""
+
 def initiate():
     pw.resize(1,92)
     random.shuffle(pw)
@@ -23,12 +23,11 @@ def addvalue():
     m,n=getrand_mn()
     password+=pw[m][n]
 
+#main
 def main_passgen():
     initiate()
     l=int(input("input length of password >>> "))
-
-    for i in range(l):
-            addvalue()
+    for i in range(l):addvalue()
     print(f"your password is \n-=-=-=-=-=- \n {password} \n-=-=-=-=-=-")
       
     
