@@ -44,13 +44,13 @@ def move():
     cwd_files = [file for file in os.listdir() if os.path.isfile(file)]
 
     #current working directory
-    curwd = os.path.abspath(os.path.realpath(os.getcwd()))
+    #curwd = os.path.abspath(os.path.realpath(os.getcwd()))
     mapping = mapp()
     mf=[]
     for file in cwd_files:
         try:
             dst_folder = mapping[extension(file)]
-            shutil.copy2(file, dst_folder)
+            shutil.copy2(file, dst_folder)#dst folder somehow works correctly
             mf.append(file)
         except KeyError:
             print(f"Cannot group file {file} no folder for {extension(file)} is defined !")
