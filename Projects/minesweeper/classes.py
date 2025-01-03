@@ -1,13 +1,21 @@
 import random
+import datetime
 
-
+def eol() -> None:
+    print("-----------------------------------------------")
 
 class Grid: # controls the overall grid
+
+    initialized_time = datetime.datetime.now()
+
     def __init__(self,rows, columns, mineCount):
         self.rows = rows
         self.columns = columns
         self._mine_count = mineCount
         self._grid = [ [Cell(ro,col) for col in range(columns)] for ro in range(rows)]
+        self._remaining_cells = rows*columns
+        self._flagged_cells = 0
+
 
 
     def setSurroundingMineCount(self) -> None:
@@ -28,14 +36,25 @@ class Grid: # controls the overall grid
 
                     cell.adj_mine_count = count
 
+    def display_stats(self):
+        txt = f"Total rows -> {self.rows}\nTotal columns -> {self.columns}\nRemaining cells -> {self._remaining_cells}\nCurrently flagged cells -> {self._flagged_cells}\nMaximum flaggings allowed -> {self._mine_count}"
+        print(txt)
+        eol()
 
     def print_grid(self):
-        print("- " * self.columns)
+        self._flagged_cells = 0
+        self._remaining_cells = 0
+        # print("- " * self.columns)
         for row in self._grid:
             for cell in row:
+                if not cell.is_revealed : self._remaining_cells += 1
+                if cell.is_flagged : self._flagged_cells += 1
                 print(cell,end="  ")
+
             print() # print newline
-        print(" - " * self.columns)
+
+        eol()
+
 
     def placeMines(self):
         while self._mine_count > 0:
@@ -48,65 +67,54 @@ class Grid: # controls the overall grid
                 self._mine_count -= 1
 
 
-    def reveal_cell(self,cooridnates : tuple):
-        row = cooridnates[0]
-        column = cooridnates[1]
+    def reveal_cell(self,coordinates : tuple):
+        row = coordinates[0]
+        column = coordinates[1]
         cell = self._grid[row][column] #intitial target mine
         if cell.is_mine:
-            cell._is_revealed = True
-            end_game(f"mine encountered at{row + 1} : {column + 1}")
+            cell.is_revealed = True
+            self.end_game(f"mine encountered at :> {row + 1} : {column + 1}")
+            eol()
         else :
             cell.reveal(self._grid, self.rows, self.columns)
 
+    def flag_cell(self, coordinates : tuple):
+        row = coordinates[0]
+        column = coordinates[1]
+        cell = self._grid[row][column]
+        if not cell.is_revealed :
+            cell.toggle_flag()
+        elif cell.is_revealed : print(f"Cannot flag a revealed cell :> {row+1} : {column + 1}") ; eol()
+
+    @classmethod
+    def end_game(cls,code: str = "None"):
+        print(code)
 
 
 
 
-
-#===============================================================================================#
-
-
-
-class Cell: # controls each indivisual space / block / box on the grid
+class Cell: # controls each individual space / block / box on the grid
     def __init__(self,rowValue : int, columnValue : int ):
         self.r = rowValue
         self.c = columnValue
         self.is_mine : bool = False
         self.adj_mine_count : int = 0
-        self._is_revealed : bool = False
-        self._is_flagged : bool = False
-
-    # def reveal(self):
-    #     # if self is mine and not revealed -> reveal self -> end game
-    #     # else if  flagged -> print "cannot reveal current square - is flagged"
-    #     # else if not revealed -> self._is_revealed = true
-    #
-    #     if not self._is_revealed and self.is_mine :
-    #         self._is_revealed = True
-    #         end_game(f"Mine encountered at {self.r + 1} : {self.c}")
-    #     elif self._is_flagged :
-    #         print(f"cannot reveal cell at {self.r} : {self.c} -> cell is flagged")
-    #     elif not self._is_revealed :
-    #         if self.adj_mine_count == 0 :
-    #             self._is_revealed = True
-    #             self.reveal_adj(self.r, self.c)
-    #         else:
-    #             self._is_revealed = True
-    #     pass
+        self.is_revealed : bool = False
+        self.is_flagged : bool = False
 
     def reveal(self,grid : list, rows , columns):
-        ...
-        #TODO If the clicked cell's surrounding mine count
-        # (adj_mine_count) is 0, the game automatically reveals all its neighboring cells.
-        # This process repeats for any neighboring cell that also has a mine count of 0.
+        """If the clicked cell's surrounding mine count
+        (adj_mine_count) is 0, the game automatically reveals all its neighboring cells.
+        This process repeats for any neighboring cell that also has a mine count of 0."""
 
         if self.is_mine : return
-        if self._is_flagged :
+        if self.is_flagged :
             print(f"You cannot reveal a flagged cell !!{self.r+1} : {self.c+1}")
+            eol()
             return
-        if not self._is_revealed and not self._is_flagged:
-            self._is_revealed = True
-            if self.adj_mine_count == 0: # recursively reveal surroudning cells
+        if not self.is_revealed and not self.is_flagged:
+            self.is_revealed = True
+            if self.adj_mine_count == 0: # recursively reveal surrounding cells
                 change_by = [(-1, -1), (0, -1), (1, -1),
                              (-1, 0), (1, 0),
                              (-1, 1), (0, 1), (1, 1)]
@@ -118,34 +126,16 @@ class Cell: # controls each indivisual space / block / box on the grid
 
 
     def toggle_flag(self):
-        self._is_flagged = not self._is_flagged # negation to flagged status
+        self.is_flagged = not self.is_flagged # negation to flagged status
 
 
     def __str__(self): # to printout self status
-        if self.is_mine and self._is_revealed : return "M"
-        if not self._is_revealed : return "X"
-        if self._is_revealed : return str(self.adj_mine_count)
-        if self._is_flagged : return "?"
+        if self.is_flagged : return "?"
+        if self.is_mine and self.is_revealed : return "M"
+        if not self.is_revealed : return "*"
+        if self.is_revealed : return str(self.adj_mine_count)
 
 
-
-
-
-# GRID = Grid(5,5,5)
-# GRID.placeMines()
-# GRID.setSurroundingMineCount()
-# GRID.print_grid()
-# GRID.reveal_cell(1,1)
-# GRID.print_grid()
-
-def end_game(code : str = "None"):
-    print(code)
-
-
-
-"""
-
-"""
 
 
 
