@@ -1,7 +1,10 @@
 #main file
 from functions import *
 
-
+"""
+-> a cli based minesweeper game
+download all 3 files and simply run main.py
+"""
 def main():
 
     #initialization
