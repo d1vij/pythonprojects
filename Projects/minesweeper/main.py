@@ -48,3 +48,6 @@ def get_coordinates_to_reveal(grid : Grid):
         get_coordinates_to_reveal(grid)
 
 main()
+
+
+#TEST
